@@ -1,0 +1,2 @@
+from Util.MatrixUtil import normalize_matrix_line
+from Util.MatrixUtil import shelterSmallValue
