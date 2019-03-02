@@ -34,3 +34,7 @@ def compute_bic_of_HMM(a_matrix,b_matrix,pi,observeSequenceList,W_k=None):
     BIC -= (N*N + N*M + N)*math.log(K,math.e);
 
     return BIC;
+
+
+def compute_PMI_of_HMM_Clusters(a_matrix_list,b_matrix_list,pi_list,observe_sequence_list):
+    pass;

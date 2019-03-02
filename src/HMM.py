@@ -288,16 +288,25 @@ def baum_welch_multipleObservation(a_matrix, b_matrix, pi, sequenceList ,W_k=Non
         #更新A
         for state in range(N):
             for next_state in range(N):
-                a_matrix[state][next_state] = a_numerator[state][next_state]/a_denominator[state][next_state];
+                if a_denominator[state][next_state] == 0:
+                    a_matrix[state][next_state] = 0;
+                else :
+                    a_matrix[state][next_state] = a_numerator[state][next_state]/a_denominator[state][next_state];
 
         #更新B
         for state in range(N):
             for o_state in range(M):
-                b_matrix[state][o_state] = b_numerator[state][o_state] / b_denominator[state][o_state];
+                if b_denominator[state][o_state] == 0 :
+                    b_matrix[state][o_state] = 0;
+                else:
+                    b_matrix[state][o_state] = b_numerator[state][o_state] / b_denominator[state][o_state];
 
         #更新PI
         for state in range(N):
-            pi[state] = pi_numerator[state]/pi_denominator[state];
+            if pi_denominator[state] == 0 :
+                pi[state] = 0;
+            else:
+                pi[state] = pi_numerator[state]/pi_denominator[state];
 
     return a_matrix,b_matrix,pi;
 
