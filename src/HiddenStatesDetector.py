@@ -9,7 +9,7 @@ def try_differen_hidden_state_nums(observe_sequence_list,M):
     # 实验配置值
     repeat_times = 10;
     N_start = 1;
-    N_end = 7;
+    N_end = 10;
 
     N_list = [];
     average_bic_list = [];
@@ -21,7 +21,7 @@ def try_differen_hidden_state_nums(observe_sequence_list,M):
             a_matrix = init_A(N);
             b_matrix = init_B(N, M);
             pi = init_PI(N);
-            a_matrix, b_matrix, pi = baum_welch_multipleObservation(a_matrix, b_matrix, pi, observe_sequence_list, None, 1);
+            a_matrix, b_matrix, pi = baum_welch_multipleObservation(a_matrix, b_matrix, pi, observe_sequence_list, None, 10);
 
             bic = compute_bic_of_HMM(a_matrix, b_matrix, pi, observe_sequence_list)
             bic_list.append(bic);
@@ -70,5 +70,5 @@ if __name__ == "__main__":
     o_sequence_List = [];
     for index in range(_data.__len__()):
         o_sequence_List.append(_data[index][1]);
-    print(detect_best_hidden_state_num(o_sequence_List,M));
-    #print(OUT_ROOT_PATH + time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())));
+    #print(detect_best_hidden_state_num(o_sequence_List,M));
+    draw_bic_with_different_hidden_state_num(o_sequence_List,M)

@@ -14,6 +14,6 @@ STATE_DELIMITER = '-';
 
 NULL_OCCUPY = 'UNKNOWN';
 
-DATA_FILE_NAME='psmSequence-e1-t1';#数据文件名称
+DATA_FILE_NAME='psmSequence-e2-t6';#数据文件名称
 
 OBSERVE_STATE_LIST = ["UU","UN","UY","NU","NN","NY","YU","YN","YY"]; #隐式状态定义
