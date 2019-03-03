@@ -1,5 +1,6 @@
 import numpy as np
 from Util import normalize_matrix_line
+import math
 
 def init_A(N):
     """
@@ -212,7 +213,7 @@ def baum_welch(a_matrix, b_matrix, pi, sequence , iteration = 20):
 
     return a_matrix,b_matrix,pi;
 
-def baum_welch_multipleObservation(a_matrix, b_matrix, pi, sequenceList ,W_k=None, iteration = 1 , showProgress = False):
+def baum_welch_multipleObservation(a_matrix, b_matrix, pi, sequenceList ,W_k=None, max_iteration = 100 , showProgress = False):
     """
     采用
     baum_welch算法训练数据
@@ -229,12 +230,15 @@ def baum_welch_multipleObservation(a_matrix, b_matrix, pi, sequenceList ,W_k=Non
     if W_k is None :
         W_k = np.ones(K)/K;
 
+    pre_log_p_o_of_lamda = -1;
+    misconvergence = True;
+    epison = 4e-3;
     iter = 0;
-    while iter < iteration:
+    while misconvergence and iter < max_iteration:
         iter += 1;
 
-        if showProgress and iter%10 == 0 :
-            print("enter iter ",iter);
+        if showProgress and iter%2 == 0 :
+            print("HMM enter iter ",iter);
 
         a_numerator = np.zeros(a_matrix.shape) ;
         b_numerator = np.zeros(b_matrix.shape) ;
@@ -308,8 +312,27 @@ def baum_welch_multipleObservation(a_matrix, b_matrix, pi, sequenceList ,W_k=Non
             else:
                 pi[state] = pi_numerator[state]/pi_denominator[state];
 
+        log_p_o_of_lamda = caculate_log_p_o_of_lamda(a_matrix,b_matrix,pi,sequenceList);
+
+        if math.fabs(log_p_o_of_lamda - pre_log_p_o_of_lamda) < epison :
+            if(showProgress):
+                print("baum-welch convergence meet");
+            misconvergence = False;
+
+        pre_log_p_o_of_lamda = log_p_o_of_lamda;
+
+
     return a_matrix,b_matrix,pi;
 
+def caculate_log_p_o_of_lamda(a_matrix,b_matrix,pi,o_sequence_list):
+    log_p_of_lamda = 0;
+
+    for sequence in o_sequence_list :
+        alphaMatrix,pforward = forword(a_matrix,b_matrix,pi,sequence);
+        if pforward > 0 :
+            log_p_of_lamda += math.log(pforward,math.e);
+
+    return log_p_of_lamda;
 
 if __name__ == "__main__":
     N = 3;

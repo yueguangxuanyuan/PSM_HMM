@@ -136,7 +136,7 @@ def do_HMM_Cluster_On_data_with_dN(observe_sequence_list,num_of_cluster,num_of_o
             b_matrix = init_B(best_N,num_of_observe);
             pi = init_PI(best_N);
 
-            a_matrix, b_matrix, pi = baum_welch_multipleObservation(a_matrix, b_matrix, pi,_sub_dataset,iteration=1);
+            a_matrix, b_matrix, pi = baum_welch_multipleObservation(a_matrix, b_matrix, pi,_sub_dataset,showProgress=show_progress);
 
             a_matrix_list.append(a_matrix);
             b_matrix_list.append(b_matrix);
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     for index in range(_data.__len__()):
         o_sequence_List.append(_data[index][1]);
 
-    a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data_with_dN(o_sequence_List,3,M)
+    a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data_with_dN(o_sequence_List,3,M,show_progress=True)
 
     PMI = compute_PMI_of_HMM_Clusters(a_matrix_list,b_matrix_list,pi_list,data_of_clusters,o_sequence_List);
     print(PMI);
