@@ -6,8 +6,8 @@ from contraint import compute_PMI_of_HMM_Clusters
 
 def try_different_hmm_cluster_nums(o_sequence_List,M):
     # 实验配置值
-    N_start = 1;
-    N_end = 5;
+    N_start = 2;
+    N_end = 7;
 
     N_list = [];
     pmi_list = [];

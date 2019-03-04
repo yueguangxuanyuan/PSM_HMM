@@ -27,5 +27,6 @@ if __name__ == "__main__":
             item_index_array.append(item_index);
 
         print(item_index_array)
+        print("\n")
 
     print(compute_PMI_of_HMM_Clusters(a_matrix_list,b_matrix_list,pi_list,data_of_clusters,o_sequence_List))

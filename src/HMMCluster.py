@@ -239,8 +239,13 @@ if __name__ == "__main__":
     for index in range(_data.__len__()):
         o_sequence_List.append(_data[index][1]);
 
-    a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data_with_dN(o_sequence_List,4,M,show_progress=True)
+    a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data_with_dN(o_sequence_List,3,M,show_progress=True)
     #a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data(o_sequence_List,3,4,M,show_progress=True)
+
+    print(a_matrix_list)
+    print(b_matrix_list)
+    print(pi_list)
+    print(data_of_clusters);
 
     PMI = compute_PMI_of_HMM_Clusters(a_matrix_list,b_matrix_list,pi_list,data_of_clusters,o_sequence_List);
     print(PMI);
