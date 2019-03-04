@@ -7,17 +7,21 @@ from contraint import compute_PMI_of_HMM_Clusters
 def try_different_hmm_cluster_nums(o_sequence_List,M):
     # 实验配置值
     N_start = 1;
-    N_end = 10;
+    N_end = 5;
 
     N_list = [];
     pmi_list = [];
     for N in range(N_start, N_end + 1):
-        print("now try N = ", N);
+        print("CND now try N = ", N);
         N_list.append(N);
 
-        a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data_with_dN(o_sequence_List, N, M,show_progress=True);
+        PMI = 0 ;#尝试规避掉PMI值为0的影响
+        iteration = 0;
+        while PMI == 0 and iteration < 2:
+            iteration += 1;
+            a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data_with_dN(o_sequence_List, N, M,show_progress=False);
+            PMI = compute_PMI_of_HMM_Clusters(a_matrix_list, b_matrix_list, pi_list, data_of_clusters, o_sequence_List);
 
-        PMI = compute_PMI_of_HMM_Clusters(a_matrix_list, b_matrix_list, pi_list, data_of_clusters, o_sequence_List);
         pmi_list.append(PMI);
 
     return N_list,pmi_list;

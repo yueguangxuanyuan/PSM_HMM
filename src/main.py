@@ -13,7 +13,7 @@ if __name__ == "__main__":
     for index in range(_data.__len__()):
         o_sequence_List.append(_data[index][1]);
 
-    best_N = 4;
+    best_N = 3;
     a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data_with_dN(o_sequence_List,best_N,M,show_progress=True);
 
     for cluster_index in range(best_N):

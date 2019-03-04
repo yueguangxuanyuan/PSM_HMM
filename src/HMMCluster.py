@@ -69,7 +69,7 @@ def do_HMM_Cluster_On_data(observe_sequence_list,num_of_cluster ,num_of_hidden,n
             for _data_item in data_of_clusters[index].values():
                 _sub_dataset.append(_data_item);
             a_matrix_list[index],b_matrix_list[index],pi_list[index]\
-                = baum_welch_multipleObservation(a_matrix_list[index],b_matrix_list[index],pi_list[index],_sub_dataset,iteration=1);
+                = baum_welch_multipleObservation(a_matrix_list[index],b_matrix_list[index],pi_list[index],_sub_dataset,showProgress=show_progress);
 
         #获取新的划分结果
         new_cluster_result = cluster_with_N_HMM(a_matrix_list,b_matrix_list,pi_list,observe_sequence_list);
@@ -113,12 +113,12 @@ def do_HMM_Cluster_On_data_with_dN(observe_sequence_list,num_of_cluster,num_of_o
     while misConvergence:
         if iterationCount >= MAX_ITERATION :
             if show_progress :
-                print("reach max_iteration");
+                print("HMMC reach max_iteration");
             break;
 
         iterationCount +=1;
         if show_progress and iterationCount % 10 == 0 :
-            print("enter iteration : ",iterationCount);
+            print("HMMC enter iteration : ",iterationCount);
 
         #重新训练num_of_cluster 个聚类
         a_matrix_list.clear();
@@ -136,7 +136,7 @@ def do_HMM_Cluster_On_data_with_dN(observe_sequence_list,num_of_cluster,num_of_o
             b_matrix = init_B(best_N,num_of_observe);
             pi = init_PI(best_N);
 
-            a_matrix, b_matrix, pi = baum_welch_multipleObservation(a_matrix, b_matrix, pi,_sub_dataset,showProgress=show_progress);
+            a_matrix, b_matrix, pi = baum_welch_multipleObservation(a_matrix, b_matrix, pi,_sub_dataset,showProgress=False);
 
             a_matrix_list.append(a_matrix);
             b_matrix_list.append(b_matrix);
@@ -148,13 +148,51 @@ def do_HMM_Cluster_On_data_with_dN(observe_sequence_list,num_of_cluster,num_of_o
         #判断是否收敛，这里用结果是否产生不变用的划分表示
         misConvergence = judgePatitionIsSame(data_of_clusters,new_cluster_result,K);
         if(show_progress):
-            print("is misconvergence : ",misConvergence);
+            print("HMMC is misconvergence : ",misConvergence);
+
+        if misConvergence :
+            new_cluster_result = recheck_cluster_result(new_cluster_result,a_matrix_list,b_matrix_list,pi_list);
 
         data_of_clusters = copy.deepcopy(new_cluster_result);
+
     if(show_progress):
-        print("end cluster");
+        print("HMMC end cluster");
 
     return a_matrix_list,b_matrix_list,pi_list,data_of_clusters;
+
+
+def recheck_cluster_result(cluster_result , a_matrix_list,b_matrix_list,pi_list):
+    #处理空簇，保证簇的数量不下降
+    empty_cluster_index_array = [];
+    for cluster_index in range(cluster_result.__len__()):
+        if cluster_result[cluster_index].__len__() == 0:
+            empty_cluster_index_array.append(cluster_index);
+
+    while empty_cluster_index_array.__len__() > 0:
+        max_cluster_count = 0;
+        max_cluster_index = -1;
+        #找到最大的簇
+        for cluster_index in range(cluster_result.__len__()):
+            if cluster_result[cluster_index].__len__() > max_cluster_count:
+                max_cluster_count = cluster_result[cluster_index].__len__();
+                max_cluster_index = cluster_index;
+
+        #找到距离最远的元素
+        min_p = 1;
+        min_p_index = -1;
+        for item_index in cluster_result[max_cluster_index]:
+            alphaMatrix,pforward = forword(a_matrix_list[max_cluster_index],b_matrix_list[max_cluster_index],pi_list[max_cluster_index], \
+                                           cluster_result[max_cluster_index][item_index]);
+            if pforward < min_p :
+                min_p = pforward;
+                min_p_index = item_index;
+
+        #重新分配元素
+        target_index = empty_cluster_index_array.pop()
+        cluster_result[target_index][min_p_index] = cluster_result[max_cluster_index][min_p_index];
+        cluster_result[max_cluster_index].pop(min_p_index);
+
+    return cluster_result;
 
 def cluster_with_N_HMM(a_matrix_list ,b_matrix_list ,pi_list , o_sequence_list):
     num_of_cluster = a_matrix_list.__len__();
@@ -201,7 +239,8 @@ if __name__ == "__main__":
     for index in range(_data.__len__()):
         o_sequence_List.append(_data[index][1]);
 
-    a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data_with_dN(o_sequence_List,3,M,show_progress=True)
+    a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data_with_dN(o_sequence_List,4,M,show_progress=True)
+    #a_matrix_list, b_matrix_list, pi_list, data_of_clusters = do_HMM_Cluster_On_data(o_sequence_List,3,4,M,show_progress=True)
 
     PMI = compute_PMI_of_HMM_Clusters(a_matrix_list,b_matrix_list,pi_list,data_of_clusters,o_sequence_List);
     print(PMI);

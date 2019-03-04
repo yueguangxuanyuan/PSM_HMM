@@ -73,7 +73,7 @@ def compute_PMI_of_HMM_Clusters(a_matrix_list,b_matrix_list,pi_list,cluster_resu
 
     J = num_of_clusters;#万一出现空聚类的情况，确保PMI的正确计算
     for cluster_index in range(num_of_clusters):
-        if cluster_result[J].__len__() == 0:
+        if cluster_result[cluster_index].__len__() == 0:
             J -= 1;
 
     PMI /= J;

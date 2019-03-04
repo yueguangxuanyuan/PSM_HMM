@@ -46,6 +46,7 @@ def forword(a_matrix,b_matrix,pi, observe_seq):
 
     #递推
     for t in range(1,T):
+        # alphaMatrix[t] = alphaMatrix[t-1].dot(a_matrix) * b_matrix[range(N),observe_seq[t]];
         for current_state in range(N):
             alphaMatrix[t][current_state] = 0;
             for pre_state in range(N):
@@ -76,6 +77,8 @@ def backword(a_matrix,b_matrix,pi, observe_seq):
 
     #递推
     for t in range(T-2,-1,-1):
+        #这里简式 可能推导错误
+        # betaMatrix[t] = a_matrix.dot((b_matrix[:,observe_seq[t+1]].reshape((N,1))*betaMatrix[t+1].reshape((N,1))).reshape(N));
         for state in range(N):
             betaMatrix[t][state] = 0 ;
             for next_state in range(N):
@@ -98,6 +101,7 @@ def compute_gama(alphaMatrix,betaMatrix):
 
     P_I_O_of_lamda = np.zeros((T,N))#在t时刻下，在模型基础上获得如此观察序列，并且当前状态为i的概率
 
+    # P_I_O_of_lamda = alphaMatrix * betaMatrix;
     for t in range(T):
         for state in range(N):
             P_I_O_of_lamda[t][state] = alphaMatrix[t][state]*betaMatrix[t][state];
@@ -142,78 +146,7 @@ def compute_xi(a_matrix,b_matrix,alphaMatrix,betaMatrix,observe_seq):
 
     return xi;
 
-def baum_welch(a_matrix, b_matrix, pi, sequence , iteration = 20):
-    """
-    采用
-    baum_welch算法训练数据
-    这里只能针对单条数据进行训练
-    :param a_matrix:
-    :param b_matrix:
-    :param pi:
-    :return:
-    """
-    N = a_matrix.shape[0];  # 隐式状态的数量
-    M = b_matrix.shape[1];  # 显示状态的数量
-
-    T = sequence.__len__();  # 观察序列的长度
-
-    iter = 0 ;
-    while iter < iteration :
-        iter += 1;
-        alphaMatrix,p = forword(a_matrix,b_matrix,pi,sequence);
-        if p == 0 :
-            #print("fronterror data ", k, " iter ", iter)
-            continue;
-        betaMatrix,p1 = backword(a_matrix,b_matrix,pi,sequence);
-        if p1 == 0:
-            #print("backerror data " , k , " iter ",iter )
-            continue;
-
-        gama = compute_gama(alphaMatrix,betaMatrix);
-        xi = compute_xi(a_matrix,b_matrix,alphaMatrix,betaMatrix,sequence);
-
-        #更新A
-        for state in range(N):
-            for next_state in range(N):
-                numerator = 0;
-                for t in range(T-1):
-                    numerator += xi[t][state][next_state];
-                denominator = 0;
-                for t in range(T-1):
-                    denominator += gama[t][state];
-
-                if np.isnan(numerator) or np.isnan(denominator):
-                    a_matrix[state][next_state] = 0;
-                elif denominator == 0 :
-                    a_matrix[state][next_state] = numerator
-                else:
-                    a_matrix[state][next_state] = numerator/denominator;
-
-        #更新B
-        for state in range(N):
-            for o_state in range(M):
-                numerator = 0;
-                for t in range(T):
-                    if sequence[t] == o_state :
-                        numerator += gama[t][state];
-                denominator = 0;
-                for t in range(T):
-                    denominator += gama[t][state];
-
-                if np.isnan(numerator) or np.isnan(denominator):
-                    b_matrix[state][o_state] = 0;
-                elif denominator == 0 :
-                    b_matrix[state][o_state] = numerator;
-                else:
-                    b_matrix[state][o_state] = numerator/denominator;
-
-        #更新PI
-        for state in range(N):
-            pi[state] = gama[0][state];
-
-    return a_matrix,b_matrix,pi;
-
-def baum_welch_multipleObservation(a_matrix, b_matrix, pi, sequenceList ,W_k=None, max_iteration = 100 , showProgress = False):
+def baum_welch_multipleObservation(a_matrix, b_matrix, pi, sequenceList ,W_k=None, max_iteration = 10 , showProgress = False):
     """
     采用
     baum_welch算法训练数据
@@ -232,12 +165,12 @@ def baum_welch_multipleObservation(a_matrix, b_matrix, pi, sequenceList ,W_k=Non
 
     pre_log_p_o_of_lamda = -1;
     misconvergence = True;
-    epison = 4e-3;
+    epison = 95e-3;
     iter = 0;
     while misconvergence and iter < max_iteration:
         iter += 1;
 
-        if showProgress and iter%2 == 0 :
+        if showProgress and iter%10 == 0 :
             print("HMM enter iter ",iter);
 
         a_numerator = np.zeros(a_matrix.shape) ;
@@ -314,7 +247,7 @@ def baum_welch_multipleObservation(a_matrix, b_matrix, pi, sequenceList ,W_k=Non
 
         log_p_o_of_lamda = caculate_log_p_o_of_lamda(a_matrix,b_matrix,pi,sequenceList);
 
-        if math.fabs(log_p_o_of_lamda - pre_log_p_o_of_lamda) < epison :
+        if log_p_o_of_lamda > 0 and math.fabs(log_p_o_of_lamda - pre_log_p_o_of_lamda) < epison :
             if(showProgress):
                 print("baum-welch convergence meet");
             misconvergence = False;
@@ -367,7 +300,7 @@ if __name__ == "__main__":
     print(gama)
     print(xi);
 
-    a_matrix, b_matrix,pi= baum_welch(a_matrix, b_matrix, pi, [o_sequence], 20)
+    a_matrix, b_matrix,pi= baum_welch_multipleObservation(a_matrix, b_matrix, pi, [o_sequence])
 
     print("a_matrix")
     print(a_matrix);
